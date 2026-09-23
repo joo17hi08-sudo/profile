@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    <title>부산 생활 편의 시설 지도 - 편의점·마트·백화점·헬스장</title>
+
+    <!-- Tailwind CSS for UI responsiveness -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Leaflet Open-Source Interactive Map CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+    <!-- Leaflet MarkerCluster CSS for grouping overlapping locations -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css" />
+
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        #map { height: calc(100vh - 4.5rem); width: 100%; z-index: 10; background-color: #f8fafc; }
+        .leaflet-popup-content-wrapper { border-radius: 1rem; padding: 0.25rem; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Custom Cluster Icon styling */
+        .custom-cluster-icon {
+            background: rgba(30, 41, 59, 0.92);
+            border: 3px solid #ffffff;
+            border-radius: 50%;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 13px;
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+        .custom-cluster-icon:hover {
+            transform: scale(1.12);
+            background: rgba(15, 23, 42, 1);
+        }
+
+        /* Force pure white text color for Naver Map button inside Leaflet popups */
+        .leaflet-popup-content a.btn-naver,
+        .btn-naver,
+        .btn-naver * {
+            color: #ffffff !important;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 flex flex-col h-screen overflow-hidden">
+
+    <header class="bg-white border-b border-slate-200 h-18 px-4 md:px-6 py-3 flex items-center justify-between shrink-0 shadow-sm z-20">
+        <div class="flex items-center space-x-3">
+            <div class="bg-indigo-600 text-white p-2.5 rounded-xl shadow-md shadow-indigo-200 flex items-center justify-center">
+                <i class="fa-solid fa-map-location-dot text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-lg md:text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                    부산 생활 편의 시설 지도
+                </h1>
+                <p class="text-xs text-slate-500 hidden sm:block">편의점 · 대형마트 · 백화점 · 헬스장 통합 상권 및 길찾기 지도</p>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-2 md:space-x-3">
+            <!-- Custom CSV File Upload -->
+            <label for="csv-file-input" class="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-xl transition flex items-center gap-1.5 border border-slate-200">
+                <i class="fa-solid fa-file-csv text-indigo-600 text-sm"></i>
+                <span class="hidden sm:inline">CSV 업로드</span>
+            </label>
+            <input type="file" id="csv-file-input" accept=".csv" class="hidden" />
+
+            <!-- Facility Counter Badge -->
+            <div class="flex items-center space-x-1 text-xs md:text-sm text-slate-600 bg-slate-100 px-3 py-1.5 rounded-xl font-medium border border-slate-200">
+                <span>시설:</span>
+                <span id="total-count" class="text-indigo-600 font-bold text-sm md:text-base">0</span>개
+            </div>
+        </div>
+    </header>
+
+    <main class="flex flex-1 relative overflow-hidden">
+        <!-- Sidebar for Search and Store List -->
+        <aside class="w-full md:w-96 bg-white border-r border-slate-200 flex flex-col z-30 absolute md:relative h-full transition-transform duration-300 transform -translate-x-full md:translate-x-0 shadow-xl md:shadow-none" id="sidebar">
+            <div class="p-4 border-b border-slate-100 space-y-3 bg-slate-50/50">
+                <!-- Search Box -->
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
+                        <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                    </span>
+                    <input type="text" id="search-input" placeholder="시설명 또는 도로명 주소 검색..." class="w-full pl-10 pr-8 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition">
+                    <button id="clear-search" class="hidden absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600">
+                        <i class="fa-solid fa-xmark text-sm"></i>
+                    </button>
+                </div>
+
+                <!-- Main Facility Category Filter Tabs -->
+                <div class="grid grid-cols-5 gap-1 p-1 bg-slate-200/60 rounded-xl text-xs font-semibold" id="category-filters">
+                    <button class="cat-btn active py-1.5 rounded-lg text-center transition bg-indigo-600 text-white shadow-sm" data-category="ALL">전체</button>
+                    <button class="cat-btn py-1.5 rounded-lg text-center transition text-slate-600 hover:text-slate-900" data-category="편의점">편의점</button>
+                    <button class="cat-btn py-1.5 rounded-lg text-center transition text-slate-600 hover:text-slate-900" data-category="대형마트">마트</button>
+                    <button class="cat-btn py-1.5 rounded-lg text-center transition text-slate-600 hover:text-slate-900" data-category="백화점">백화점</button>
+                    <button class="cat-btn py-1.5 rounded-lg text-center transition text-slate-600 hover:text-slate-900" data-category="헬스장">헬스장</button>
+                </div>
+
+                <!-- District Filter Dropdown -->
+                <div>
+                    <select id="district-filter" class="w-full py-2 px-3 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm">
+                        <option value="">부산광역시 전체 (구/군 선택)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Store List Container -->
+            <div id="store-list" class="flex-1 overflow-y-auto divide-y divide-slate-100 p-2 space-y-1 custom-scrollbar">
+                <div class="p-8 text-center text-slate-400 text-sm">
+                    <i class="fa-solid fa-spinner animate-spin text-2xl text-indigo-500 mb-2"></i>
+                    <p>데이터를 불러오는 중입니다...</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Toggle Button for Mobile View -->
+        <button id="toggle-sidebar" class="md:hidden absolute bottom-6 left-6 z-40 bg-indigo-600 text-white p-3.5 rounded-full shadow-lg hover:bg-indigo-700 transition active:scale-95">
+            <i class="fa-solid fa-list-ul text-lg"></i>
+        </button>
+
+        <!-- Leaflet Map Canvas -->
+        <div id="map" class="flex-1"></div>
+    </main>
+
+    <!-- Leaflet Map JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <!-- PapaParse for parsing CSV data -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <!-- Leaflet MarkerCluster JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.js"></script>
+
+    <script>
+        let map;
+        let markersGroup;
+        let allStores = [];
+        let activeCategoryFilter = 'ALL';
+
+        // Center coordinate: Busan City Center
+        const BUSAN_CENTER = [35.1796, 129.0756];
+
+        // Category Styling Configuration
+        const CATEGORY_STYLES = {
+            '편의점': {
+                bg: '#059669', // Emerald
+                text: '#ffffff',
+                icon: 'fa-shop',
+                badge: 'bg-emerald-100 text-emerald-800 border-emerald-200'
+            },
+            '대형마트': {
+                bg: '#2563eb', // Blue
+                text: '#ffffff',
+                icon: 'fa-cart-shopping',
+                badge: 'bg-blue-100 text-blue-800 border-blue-200'
+            },
+            '백화점': {
+                bg: '#7c3aed', // Purple
+                text: '#ffffff',
+                icon: 'fa-bag-shopping',
+                badge: 'bg-purple-100 text-purple-800 border-purple-200'
+            },
+            '헬스장': {
+                bg: '#ea580c', // Orange/Red
+                text: '#ffffff',
+                icon: 'fa-dumbbell',
+                badge: 'bg-orange-100 text-orange-800 border-orange-200'
+            },
+            '기타': {
+                bg: '#475569', // Slate
+                text: '#ffffff',
+                icon: 'fa-location-dot',
+                badge: 'bg-slate-100 text-slate-800 border-slate-200'
+            }
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initKoreanMap();
+            loadEmbeddedData();
+            setupEventListeners();
+        });
+
+        function initKoreanMap() {
+            map = L.map('map', {
+                center: BUSAN_CENTER,
+                zoom: 12,
+                zoomControl: false
+            });
+
+            L.control.zoom({ position: 'topright' }).addTo(map);
+
+            // Google Maps Korean Vector Tile Layer (Guaranteed NO 403, crisp Korean place names)
+            const googleKoreanTile = L.tileLayer('https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=ko', {
+                subdomains: ['0', '1', '2', '3'],
+                maxZoom: 20,
+                attribution: '&copy; Google Maps'
+            });
+
+            const osmTile = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            });
+
+            googleKoreanTile.addTo(map);
+
+            const baseMaps = {
+                "한국어 지도 (Google)": googleKoreanTile,
+                "일반 지도 (OSM)": osmTile
+            };
+            L.control.layers(baseMaps, null, { position: 'bottomright' }).addTo(map);
+
+            markersGroup = L.markerClusterGroup({
+                spiderfyOnMaxZoom: true,
+                showCoverageOnHover: false,
+                zoomToBoundsOnClick: true,
+                maxClusterRadius: 40,
+                spiderfyDistanceMultiplier: 1.4,
+                iconCreateFunction: function(cluster) {
+                    const count = cluster.getChildCount();
+                    return L.divIcon({
+                        html: `<div>${count}</div>`,
+                        className: 'custom-cluster-icon',
+                        iconSize: L.point(34, 34)
+                    });
+                }
+            }).addTo(map);
+        }
+
+        function loadEmbeddedData() {
+            // Busan Dataset containing Convenience Stores, Superstores, Department Stores, and Gyms
+            const embeddedCSV = `상가업소번호,상호명,지점명,상권업종대분류명,상권업종중분류명,상권업종소분류명,시도명,시군구명,행정동명,법정동명,지번번지,도로명주소,경도,위도
+1,신세계백화점,센텀시티점,소매,종합소매점,백화점,부산광역시,해운대구,우동,우동,1495,부산광역시 해운대구 센텀남대로 35,129.1284,35.1689
+2,롯데백화점,부산본점,소매,종합소매점,백화점,부산광역시,부산진구,부전동,부전동,503-15,부산광역시 부산진구 가야대로 772,129.0558,35.1568
+3,롯데백화점,광복점,소매,종합소매점,백화점,부산광역시,중구,중앙동7가,중앙동7가,20-1,부산광역시 중구 중앙대로 2,129.0361,35.0986
+4,롯데백화점,동래점,소매,종합소매점,백화점,부산광역시,동래구,온천동,온천동,502-3,부산광역시 동래구 중앙대로 1393,129.0838,35.2101
+5,현대백화점,부산점,소매,종합소매점,백화점,부산광역시,동구,범일동,범일동,830-30,부산광역시 동구 범일로 125,129.0628,35.1381
+6,이마트,해운대점,소매,종합소매점,대형마트,부산광역시,해운대구,중동,중동,1758,부산광역시 해운대구 좌동순환로 511,129.1678,35.1631
+7,이마트,문현점,소매,종합소매점,대형마트,부산광역시,남구,문현동,문현동,1227,부산광역시 남구 전포대로 91,129.0664,35.1436
+8,홈플러스,센텀시티점,소매,종합소매점,대형마트,부산광역시,해운대구,우동,우동,1496,부산광역시 해운대구 센텀동로 6,129.1315,35.1678
+9,홈플러스,서면점,소매,종합소매점,대형마트,부산광역시,진구,전포동,전포동,695,부산광역시 부산진구 동천로 4,129.0634,35.1482
+10,롯데마트,광복점,소매,종합소매점,대형마트,부산광역시,중구,중앙동7가,중앙동7가,20-1,부산광역시 중구 중앙대로 2,129.0366,35.0979
+11,코스트코,부산점,소매,종합소매점,대형마트,부산광역시,수영구,망미동,망미동,1019,부산광역시 수영구 과정로 47,129.1158,35.1764
+12,메가마트,남천점,소매,종합소매점,대형마트,부산광역시,수영구,남천동,남천동,148-9,부산광역시 수영구 남천서로 56,129.1082,35.1412
+13,스포애니,서면점,학문/교육,체육시설,헬스장,부산광역시,부산진구,부전동,부전동,256-3,부산광역시 부산진구 중앙대로 692,129.0592,35.1538
+14,마인드휘트니스,해운대점,학문/교육,체육시설,헬스장,부산광역시,해운대구,우동,우동,1505,부산광역시 해운대구 센텀2로 19,129.1328,35.1658
+15,스마트핏 헬스클럽,구서점,학문/교육,체육시설,헬스장,부산광역시,금정구,구서동,구서동,414-2,부산광역시 금정구 금정로 233,129.0886,35.2472
+16,짐매니아 피트니스,센텀점,학문/교육,체육시설,헬스장,부산광역시,해운대구,재송동,재송동,1210,부산광역시 해운대구 센텀동로 57,129.1264,35.1738
+17,피트니스501,연산점,학문/교육,체육시설,헬스장,부산광역시,연제구,연산동,연산동,723-4,부산광역시 연제구 월드컵대로 125,129.0784,35.1852
+18,세븐일레븐,부산시청점,소매,종합소매점,편의점,부산광역시,연제구,연산동,연산동,1000-1,부산광역시 연제구 연산로 1,129.0756,35.1796
+19,CU,부산역점,소매,종합소매점,편의점,부산광역시,동구,초량동,초량동,1200-2,부산광역시 동구 중앙대로 206,129.0401,35.1153
+20,GS25,해운대해수욕장점,소매,종합소매점,편의점,부산광역시,해운대구,우동,우동,500-3,부산광역시 해운대구 해운대해변로 264,129.1582,35.1584
+21,이마트24,서면점,소매,종합소매점,편의점,부산광역시,부산진구,부전동,부전동,200-1,부산광역시 부산진구 중앙대로 708,129.0602,35.1552
+22,CU,광안리해변점,소매,종합소매점,편의점,부산광역시,수영구,광안동,광안동,150-5,부산광역시 수영구 광안해변로 219,129.1173,35.1531
+23,세븐일레븐,남포동점,소매,종합소매점,편의점,부산광역시,중구,남포동,남포동,30-1,부산광역시 중구 구덕로 38,129.0284,35.0982
+24,GS25,동래역점,소매,종합소매점,편의점,부산광역시,동래구,온천동,온천동,450-2,부산광역시 동래구 중앙대로 1388,129.0831,35.2054
+25,CU,센텀시티점,소매,종합소매점,편의점,부산광역시,해운대구,우동,우동,1515,부산광역시 해운대구 센텀중앙로 90,129.1294,35.1691`;
+
+            Papa.parse(embeddedCSV, {
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    processCSVData(results.data);
+                }
+            });
+        }
+
+        // Automatic category identification logic based on CSV fields & store names
+        function detectCategory(row) {
+            const rawName = (row['상호명'] || '').trim();
+            const subCat = (row['상권업종소분류명'] || '').trim();
+            const midCat = (row['상권업종중분류명'] || '').trim();
+
+            if (subCat.includes('백화점') || rawName.includes('백화점')) {
+                return '백화점';
+            }
+
+            if (subCat.includes('대형마트') || 
+                (rawName.includes('이마트') && !rawName.includes('이마트24')) || 
+                rawName.includes('홈플러스') || 
+                rawName.includes('롯데마트') || 
+                rawName.includes('코스트코') || 
+                rawName.includes('메가마트') ||
+                rawName.includes('트레이더스')) {
+                return '대형마트';
+            }
+
+            if (subCat.includes('헬스') || midCat.includes('체육') || 
+                rawName.includes('헬스') || rawName.includes('휘트니스') || 
+                rawName.includes('피트니스') || rawName.includes('짐') || 
+                rawName.includes('스포애니') || rawName.includes('스마트핏')) {
+                return '헬스장';
+            }
+
+            if (subCat.includes('편의점') || rawName.includes('GS25') || 
+                rawName.includes('CU') || rawName.includes('세븐일레븐') || 
+                rawName.includes('이마트24') || rawName.includes('미니스톱')) {
+                return '편의점';
+            }
+
+            return '기타';
+        }
+
+        function processCSVData(data) {
+            allStores = data.map((row, index) => {
+                const rawName = (row['상호명'] || '시설').trim();
+                const branch = row['지점명'] ? `(${row['지점명'].trim()})` : '';
+                const fullTitle = `${rawName} ${branch}`.trim();
+                const category = detectCategory(row);
+
+                const address = row['도로명주소'] || row['지번주소'] || '주소 정보 없음';
+                const district = row['시군구명'] || '기타';
+                const lng = parseFloat(row['경도'] || row['lon'] || row['x']);
+                const lat = parseFloat(row['위도'] || row['lat'] || row['y']);
+
+                return {
+                    id: index,
+                    name: fullTitle,
+                    category: category,
+                    address: address,
+                    district: district,
+                    lat: lat,
+                    lng: lng
+                };
+            }).filter(s => !isNaN(s.lat) && !isNaN(s.lng));
+
+            populateDistrictOptions();
+            filterAndRenderStores();
+        }
+
+        function populateDistrictOptions() {
+            const districtSelect = document.getElementById('district-filter');
+            districtSelect.innerHTML = '<option value="">부산광역시 전체 (구/군 선택)</option>';
+
+            const districts = [...new Set(allStores.map(s => s.district))].filter(Boolean).sort();
+            districts.forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d;
+                opt.textContent = d;
+                districtSelect.appendChild(opt);
+            });
+        }
+
+        function filterAndRenderStores() {
+            const searchKeyword = document.getElementById('search-input').value.toLowerCase().trim();
+            const selectedDistrict = document.getElementById('district-filter').value;
+
+            const filtered = allStores.filter(store => {
+                const matchesSearch = store.name.toLowerCase().includes(searchKeyword) ||
+                                      store.address.toLowerCase().includes(searchKeyword);
+                const matchesDistrict = selectedDistrict === "" || store.district === selectedDistrict;
+                const matchesCategory = activeCategoryFilter === 'ALL' || store.category === activeCategoryFilter;
+
+                return matchesSearch && matchesDistrict && matchesCategory;
+            });
+
+            renderStoresOnMapAndSidebar(filtered);
+        }
+
+        function renderStoresOnMapAndSidebar(stores) {
+            markersGroup.clearLayers();
+            const storeListEl = document.getElementById('store-list');
+            storeListEl.innerHTML = '';
+
+            document.getElementById('total-count').textContent = stores.length.toLocaleString();
+
+            if (stores.length === 0) {
+                storeListEl.innerHTML = `
+                    <div class="p-8 text-center text-slate-400">
+                        <i class="fa-solid fa-location-crosshairs text-3xl mb-2 text-slate-300"></i>
+                        <p class="text-sm font-medium">검색 결과가 없습니다.</p>
+                        <p class="text-xs text-slate-400 mt-1">검색어나 카테고리 조건 변경을 시도해보세요.</p>
+                    </div>`;
+                return;
+            }
+
+            const bounds = [];
+
+            stores.forEach(store => {
+                const pos = [store.lat, store.lng];
+                bounds.push(pos);
+
+                const catStyle = CATEGORY_STYLES[store.category] || CATEGORY_STYLES['기타'];
+                
+                // Custom SVG Marker Pin Icon per Category
+                const customIcon = L.divIcon({
+                    className: 'custom-map-pin',
+                    html: `
+                        <div style="background-color:${catStyle.bg}; color:${catStyle.text}; width:30px; height:30px; border-radius:50%; border:2px solid white; box-shadow:0 3px 8px rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; font-size:12px;">
+                            <i class="fa-solid ${catStyle.icon}"></i>
+                        </div>`,
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 15],
+                    popupAnchor: [0, -15]
+                });
+
+                const marker = L.marker(pos, { icon: customIcon });
+
+                // Popup card with Kakao Maps & Naver Maps Navigation Link
+                const popupHTML = `
+                    <div class="p-2 min-w-[220px]">
+                        <div class="flex items-center justify-between mb-1.5 gap-2">
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-md border ${catStyle.badge}">
+                                <i class="fa-solid ${catStyle.icon} mr-1"></i>${escapeHtml(store.category)}
+                            </span>
+                            <span class="text-[11px] text-slate-500 font-medium">${escapeHtml(store.district)}</span>
+                        </div>
+                        <h3 class="font-bold text-slate-900 text-sm mb-1">${escapeHtml(store.name)}</h3>
+                        <p class="text-xs text-slate-600 leading-tight mb-2.5">${escapeHtml(store.address)}</p>
+                        
+                        <div class="pt-2.5 border-t border-slate-100 flex items-center justify-center gap-2">
+                            <a href="https://map.kakao.com/?q=${encodeURIComponent(store.name + ' ' + store.address)}" target="_blank" class="px-3 py-1.5 text-[11px] bg-amber-300 hover:bg-amber-400 text-amber-950 font-bold rounded-lg transition flex items-center justify-center gap-1 shadow-sm">
+                                <i class="fa-solid fa-map-pin text-[10px]"></i> 카카오맵
+                            </a>
+                            <a href="https://map.naver.com/v5/search/${encodeURIComponent(store.name + ' ' + store.address)}" target="_blank" class="btn-naver px-3 py-1.5 text-[11px] bg-emerald-600 hover:bg-emerald-700 font-bold rounded-lg transition flex items-center justify-center gap-1 shadow-sm" style="color: #ffffff !important;">
+                                <i class="fa-solid fa-arrow-up-right-from-square text-[9px]" style="color: #ffffff !important;"></i> 네이버지도앱
+                            </a>
+                        </div>
+                    </div>
+                `;
+
+                marker.bindPopup(popupHTML);
+                markersGroup.addLayer(marker);
+
+                // Create Sidebar Card Item
+                const itemEl = document.createElement('div');
+                itemEl.className = 'p-3 hover:bg-slate-50 rounded-xl cursor-pointer transition border border-transparent hover:border-slate-200 group';
+                itemEl.innerHTML = `
+                    <div class="flex justify-between items-start mb-1">
+                        <h4 class="font-semibold text-slate-900 text-sm group-hover:text-indigo-600 transition flex items-center gap-1.5">
+                            <i class="fa-solid ${catStyle.icon} text-xs text-slate-400 group-hover:text-indigo-600"></i>
+                            ${escapeHtml(store.name)}
+                        </h4>
+                        <span class="text-[10px] px-2 py-0.5 rounded-md font-medium border ${catStyle.badge} shrink-0 ml-2">
+                            ${escapeHtml(store.category)}
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-500 line-clamp-1 mb-2"><i class="fa-solid fa-location-dot text-slate-400 mr-1 text-[10px]"></i>${escapeHtml(store.address)}</p>
+                    <div class="flex gap-1.5 pt-1">
+                        <a href="https://map.kakao.com/?q=${encodeURIComponent(store.name + ' ' + store.address)}" target="_blank" onclick="event.stopPropagation()" class="text-[10px] bg-amber-100 hover:bg-amber-200 text-amber-900 font-semibold px-2 py-0.5 rounded transition inline-flex items-center gap-1">
+                            <i class="fa-solid fa-map-pin text-[9px]"></i> 카카오맵
+                        </a>
+                        <a href="https://map.naver.com/v5/search/${encodeURIComponent(store.name + ' ' + store.address)}" target="_blank" onclick="event.stopPropagation()" class="btn-naver text-[10px] bg-emerald-600 hover:bg-emerald-700 font-semibold px-2 py-0.5 rounded transition inline-flex items-center gap-1" style="color: #ffffff !important;">
+                            <i class="fa-solid fa-arrow-up-right-from-square text-[9px]" style="color: #ffffff !important;"></i> 네이버지도앱
+                        </a>
+                    </div>
+                `;
+
+                itemEl.addEventListener('click', () => {
+                    if (markersGroup.hasLayer(marker)) {
+                        markersGroup.zoomToShowLayer(marker, () => {
+                            marker.openPopup();
+                        });
+                    } else {
+                        map.setView(pos, 16);
+                        marker.openPopup();
+                    }
+
+                    if (window.innerWidth < 768) {
+                        document.getElementById('sidebar').classList.add('-translate-x-full');
+                    }
+                });
+
+                storeListEl.appendChild(itemEl);
+            });
+
+            if (bounds.length > 0 && bounds.length < 500) {
+                map.fitBounds(bounds, { padding: [50, 50], maxZoom: 16 });
+            }
+        }
+
+        function setupEventListeners() {
+            const searchInput = document.getElementById('search-input');
+            const clearBtn = document.getElementById('clear-search');
+            const districtFilter = document.getElementById('district-filter');
+            const categoryButtons = document.querySelectorAll('.cat-btn');
+            const toggleSidebarBtn = document.getElementById('toggle-sidebar');
+            const sidebar = document.getElementById('sidebar');
+            const csvInput = document.getElementById('csv-file-input');
+
+            // Search input listener
+            searchInput.addEventListener('input', (e) => {
+                if (e.target.value.trim().length > 0) {
+                    clearBtn.classList.remove('hidden');
+                } else {
+                    clearBtn.classList.add('hidden');
+                }
+                filterAndRenderStores();
+            });
+
+            // Clear search button
+            clearBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                clearBtn.classList.add('hidden');
+                filterAndRenderStores();
+            });
+
+            // District dropdown change listener
+            districtFilter.addEventListener('change', filterAndRenderStores);
+
+            // Category filter tabs handler
+            categoryButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    categoryButtons.forEach(b => {
+                        b.classList.remove('active', 'bg-indigo-600', 'text-white', 'shadow-sm');
+                        b.classList.add('text-slate-600');
+                    });
+                    btn.classList.add('active', 'bg-indigo-600', 'text-white', 'shadow-sm');
+                    btn.classList.remove('text-slate-600');
+
+                    activeCategoryFilter = btn.dataset.category;
+                    filterAndRenderStores();
+                });
+            });
+
+            // Mobile menu toggle
+            toggleSidebarBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('-translate-x-full');
+            });
+
+            // CSV File Parsing
+            csvInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    Papa.parse(file, {
+                        header: true,
+                        skipEmptyLines: true,
+                        complete: function(results) {
+                            processCSVData(results.data);
+                        },
+                        error: function(err) {
+                            alert('CSV 처리 오류: ' + err.message);
+                        }
+                    });
+                }
+            });
+        }
+
+        function escapeHtml(str) {
+            return String(str || '')
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>

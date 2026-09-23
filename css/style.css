@@ -1,0 +1,824 @@
+/* ==========================================================================
+   PORTFOLIO DESIGN SYSTEM: Modern Tech Minimal & Editorial Elegance
+   PRD Section 7.1 / 7.2 / 7.3 Implementation
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap');
+
+/* --- 1. CSS Custom Properties (Design Tokens - PRD 7.2) --- */
+:root {
+  /* Surface & Background Colors */
+  --bg-primary: #0A0F1D;           /* Deepest Cosmic Slate */
+  --bg-secondary: #0F172A;         /* Slate 900 */
+  --bg-tertiary: #1E293B;          /* Slate 800 */
+  
+  /* Glassmorphism Surfaces */
+  --bg-card: rgba(17, 24, 39, 0.72);
+  --bg-card-hover: rgba(30, 41, 59, 0.85);
+  --bg-card-elevated: rgba(30, 41, 59, 0.95);
+  --bg-glass-nav: rgba(10, 15, 29, 0.82);
+  --bg-glass-input: rgba(15, 23, 42, 0.6);
+
+  /* Typography Colors */
+  --text-primary: #F8FAFC;         /* High-contrast Crisp White */
+  --text-secondary: #94A3B8;       /* Slate 400 */
+  --text-muted: #64748B;           /* Slate 500 */
+  --text-inverse: #0F172A;         /* For bright badges/buttons */
+
+  /* Brand & Accent Highlights */
+  --accent-emart: #FFB81C;         /* Emart Vibrant Yellow / Amber */
+  --accent-emart-glow: rgba(255, 184, 28, 0.25);
+  --accent-point: #6366F1;         /* Electric Indigo 500 */
+  --accent-point-glow: rgba(99, 102, 241, 0.3);
+  --accent-cyan: #38BDF8;          /* Sky / Cyan 400 */
+  --accent-green: #10B981;         /* Emerald 500 */
+  --accent-red: #EF4444;           /* Red 500 */
+  --accent-purple: #A855F7;        /* Purple 500 */
+
+  /* Borders & Dividers */
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-focus: rgba(99, 102, 241, 0.6);
+  --border-accent: rgba(255, 184, 28, 0.4);
+  --border-bright: rgba(255, 255, 255, 0.16);
+
+  /* Elevation Shadows & Blurs */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 20px 35px -10px rgba(0, 0, 0, 0.5);
+  --shadow-glow-yellow: 0 0 25px rgba(255, 184, 28, 0.22);
+  --shadow-glow-indigo: 0 0 30px rgba(99, 102, 241, 0.25);
+  --glass-blur: blur(16px);
+  --glass-blur-sm: blur(8px);
+
+  /* Radius Tokens (PRD 7.1: 16px ~ 24px) */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  --radius-full: 9999px;
+
+  /* Layout & Geometry */
+  --max-width: 1200px;
+  --header-height: 72px;
+
+  /* Typography Families */
+  --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Noto Sans KR', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Transition Curves */
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-fast: 0.18s ease;
+  --transition-normal: 0.28s var(--ease-spring);
+  --transition-slow: 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --- 2. Global Resets & Base Styles --- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.65;
+  letter-spacing: -0.015em;
+  overflow-x: hidden;
+  position: relative;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-image: 
+    radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.12) 0%, transparent 40%),
+    radial-gradient(circle at 85% 25%, rgba(255, 184, 28, 0.08) 0%, transparent 45%),
+    radial-gradient(circle at 50% 80%, rgba(56, 189, 248, 0.06) 0%, transparent 50%);
+  background-attachment: fixed;
+}
+
+::selection {
+  background-color: var(--accent-emart);
+  color: #112A46;
+}
+
+/* Subtle grid texture overlay for editorial depth */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* --- 3. Typography & Editorial Headings --- */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  color: var(--text-primary);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+}
+
+h1 { font-size: clamp(2.5rem, 5vw, 4.2rem); }
+h2 { font-size: clamp(1.85rem, 3.5vw, 2.75rem); }
+h3 { font-size: clamp(1.35rem, 2.4vw, 1.85rem); }
+h4 { font-size: 1.25rem; font-weight: 700; }
+p { color: var(--text-secondary); }
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+img, video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* --- 4. Layout Container --- */
+.container {
+  width: 100%;
+  max-width: var(--max-width);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* --- 5. Glassmorphism Components & Utilities (PRD 7.1) --- */
+.glass-panel {
+  background: var(--bg-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  transition: transform var(--transition-normal), 
+              border-color var(--transition-normal), 
+              box-shadow var(--transition-normal);
+}
+
+.glass-panel:hover {
+  border-color: var(--border-bright);
+}
+
+.card-interactive {
+  cursor: pointer;
+}
+
+.card-interactive:hover {
+  transform: translateY(-6px);
+  background: var(--bg-card-hover);
+  border-color: rgba(255, 184, 28, 0.3);
+  box-shadow: var(--shadow-lg), var(--shadow-glow-yellow);
+}
+
+/* --- 6. Navigation Bar (Editorial Glass Header) --- */
+.site-header {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: var(--header-height);
+  background: var(--bg-glass-nav);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--border-subtle);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+}
+
+.nav-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  font-family: var(--font-heading);
+}
+
+.brand-mark {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--accent-emart) 0%, #F59E0B 100%);
+  color: #112A46;
+  font-weight: 900;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(255, 184, 28, 0.35);
+  transition: transform var(--transition-fast);
+}
+
+.brand-logo:hover .brand-mark {
+  transform: rotate(-6deg) scale(1.05);
+}
+
+.brand-text h1.brand-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+
+.brand-text span.brand-role {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--accent-emart);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 1.75rem;
+  list-style: none;
+}
+
+.nav-link {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  position: relative;
+  padding: 0.4rem 0;
+}
+
+.nav-link:hover, .nav-link.active {
+  color: var(--text-primary);
+}
+
+.nav-link::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--accent-emart);
+  transition: width var(--transition-normal);
+  border-radius: var(--radius-full);
+}
+
+.nav-link:hover::after, .nav-link.active::after {
+  width: 100%;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* --- 7. Buttons & CTAs --- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--font-heading);
+  font-size: 0.875rem;
+  font-weight: 700;
+  padding: 0.7rem 1.4rem;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-emart) 0%, #F59E0B 100%);
+  color: #112A46;
+  box-shadow: 0 4px 16px rgba(255, 184, 28, 0.35);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(255, 184, 28, 0.5);
+  background: linear-gradient(135deg, #FFC53D 0%, #D97706 100%);
+}
+
+.btn-indigo {
+  background: linear-gradient(135deg, var(--accent-point) 0%, #4F46E5 100%);
+  color: #FFFFFF;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35);
+}
+
+.btn-indigo:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.5);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  backdrop-filter: var(--glass-blur-sm);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--border-bright);
+  transform: translateY(-2px);
+}
+
+.btn-sm {
+  padding: 0.45rem 0.9rem;
+  font-size: 0.775rem;
+  border-radius: var(--radius-sm);
+}
+
+/* --- 8. Badges & Tags --- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.badge-emart {
+  background: rgba(255, 184, 28, 0.14);
+  color: var(--accent-emart);
+  border: 1px solid rgba(255, 184, 28, 0.35);
+}
+
+.badge-indigo {
+  background: rgba(99, 102, 241, 0.15);
+  color: #A5B4FC;
+  border: 1px solid rgba(99, 102, 241, 0.35);
+}
+
+.badge-green {
+  background: rgba(16, 185, 129, 0.15);
+  color: #6EE7B7;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.badge-pill {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+  font-size: 0.75rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-sm);
+}
+
+/* --- 9. Hero Section (Editorial Impact) --- */
+.hero-section {
+  padding: 5rem 0 4.5rem;
+  position: relative;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 3.5rem;
+  align-items: center;
+}
+
+.hero-text-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: fit-content;
+}
+
+.hero-title {
+  color: var(--text-primary);
+  line-height: 1.12;
+}
+
+.hero-title .highlight-yellow {
+  color: var(--accent-emart);
+  background: linear-gradient(135deg, #FFB81C 20%, #F59E0B 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-title .highlight-indigo {
+  color: var(--accent-point);
+  background: linear-gradient(135deg, #818CF8 20%, #38BDF8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-description {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  max-width: 580px;
+  line-height: 1.7;
+}
+
+.hero-cta-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding-top: 0.5rem;
+}
+
+/* Hero Stats Card / Showcase (Visual Elegance) */
+.hero-stats-card {
+  padding: 2.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(145deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.85) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-stats-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 140px;
+  height: 140px;
+  background: radial-gradient(circle, var(--accent-point-glow) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.stats-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 1rem;
+}
+
+.stats-header-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+  transition: all var(--transition-fast);
+}
+
+.stat-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 184, 28, 0.3);
+  transform: translateX(4px);
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-label {
+  font-size: 0.775rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.stat-desc {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.stat-val {
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--accent-emart);
+}
+
+/* --- 10. Design System Preview / Token Swatches Section --- */
+.tokens-section {
+  padding: 3rem 0;
+}
+
+.section-header {
+  margin-bottom: 2.5rem;
+  text-align: center;
+}
+
+.section-subtitle {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent-emart);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.5rem;
+}
+
+.section-title {
+  color: var(--text-primary);
+}
+
+.tokens-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+.token-card {
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.color-chip {
+  width: 100%;
+  height: 56px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: flex-end;
+  padding: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.token-meta h4 {
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.token-meta p {
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+/* --- 11. Projects Grid Showcase --- */
+.projects-section {
+  padding: 4.5rem 0;
+}
+
+.filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 3rem;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+  padding: 0.6rem 1.25rem;
+  border-radius: var(--radius-full);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  backdrop-filter: var(--glass-blur-sm);
+}
+
+.filter-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--border-bright);
+}
+
+.filter-btn.active {
+  background: linear-gradient(135deg, var(--accent-emart) 0%, #F59E0B 100%);
+  color: #112A46;
+  border-color: transparent;
+  box-shadow: 0 4px 15px rgba(255, 184, 28, 0.35);
+  font-weight: 700;
+}
+
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+  gap: 2.25rem;
+}
+
+.project-card {
+  padding: 2.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-radius: var(--radius-xl);
+  position: relative;
+  overflow: hidden;
+}
+
+.project-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+}
+
+.project-title {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.project-subtitle {
+  font-size: 0.925rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  margin-bottom: 1.5rem;
+}
+
+.project-preview-box {
+  width: 100%;
+  height: 220px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #020617;
+  position: relative;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--border-subtle);
+}
+
+.project-preview-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--transition-slow);
+}
+
+.project-card:hover .project-preview-box img {
+  transform: scale(1.05);
+}
+
+.project-highlights {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 1.75rem;
+}
+
+.project-highlights li {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  line-height: 1.5;
+}
+
+.project-highlights li::before {
+  content: "✦";
+  color: var(--accent-emart);
+  font-size: 0.75rem;
+  margin-top: 2px;
+}
+
+.project-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.75rem;
+}
+
+.project-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* --- 12. Footer --- */
+.site-footer {
+  padding: 4rem 0 3rem;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-primary);
+  margin-top: 4rem;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.footer-credit p {
+  font-size: 0.825rem;
+  color: var(--text-muted);
+}
+
+/* --- 13. Responsive Breakpoints (PRD 7.3) --- */
+/* Tablet (768px ~ 1024px) */
+@media (max-width: 1024px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+  
+  .projects-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Mobile (< 768px) */
+@media (max-width: 768px) {
+  :root {
+    --header-height: 64px;
+    --radius-lg: 18px;
+    --radius-xl: 22px;
+  }
+
+  .nav-menu {
+    display: none; /* Mobile Drawer can be toggled */
+  }
+
+  .hero-section {
+    padding: 3rem 0 3rem;
+  }
+
+  .hero-title {
+    font-size: 2.2rem;
+  }
+
+  .hero-description {
+    font-size: 0.975rem;
+  }
+
+  .projects-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .project-card {
+    padding: 1.5rem;
+  }
+
+  .tokens-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .tokens-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .hero-cta-group {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .btn {
+    width: 100%;
+  }
+}

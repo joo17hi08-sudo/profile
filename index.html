@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>포트폴리오 | 기획과 코드를 잇는 올라운더 - Modern Tech Minimal & Editorial Elegance</title>
+    
+    <!-- Meta Descriptions for SEO -->
+    <meta name="description" content="신세계 이마트 보물찾기 게이미피케이션 기획부터 Leaflet 기반 부산 생활 편의 지도 프론트엔드 웹앱까지, 문제 해결과 인터랙티브 웹을 구현하는 포트폴리오">
+    
+    <!-- Design System CSS (PRD 7.1 / 7.2 / 7.3) -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- FontAwesome for crisp vector iconography -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+
+    <!-- 1. Header (Editorial Glassmorphism Navigation) -->
+    <header class="site-header">
+        <div class="container">
+            <div class="nav-wrapper">
+                <a href="#" class="brand-logo">
+                    <div class="brand-mark">신</div>
+                    <div class="brand-text">
+                        <h1 class="brand-title">PORTFOLIO</h1>
+                        <span class="brand-role">Planner &amp; Frontend Dev</span>
+                    </div>
+                </a>
+
+                <nav>
+                    <ul class="nav-menu">
+                        <li><a href="#hero" class="nav-link active">홈</a></li>
+                        <li><a href="#design-system" class="nav-link">비주얼 컨셉 (7.1)</a></li>
+                        <li><a href="#projects" class="nav-link">프로젝트</a></li>
+                        <li><a href="#contact" class="nav-link">연락처</a></li>
+                    </ul>
+                </nav>
+
+                <div class="nav-actions">
+                    <a href="이마트 보물찾기 프로젝트 기획안.pdf" target="_blank" class="btn btn-secondary btn-sm">
+                        <i class="fa-solid fa-file-pdf text-amber-400"></i>
+                        <span>기획서 PDF</span>
+                    </a>
+                    <a href="https://github.com/joo17hi08-sudo" target="_blank" class="btn btn-primary btn-sm">
+                        <i class="fa-brands fa-github"></i>
+                        <span>GitHub</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 2. Hero Section (PRD 7.1 Editorial Impact & Glassmorphism) -->
+    <section id="hero" class="hero-section">
+        <div class="container">
+            <div class="hero-grid">
+                <!-- Hero Left: Editorial Statement -->
+                <div class="hero-text-content">
+                    <div class="hero-eyebrow">
+                        <span class="badge badge-emart">
+                            <i class="fa-solid fa-sparkles"></i> SHINSEGAE 2ND GEN PORTFOLIO
+                        </span>
+                        <span class="badge badge-indigo">
+                            <i class="fa-solid fa-code"></i> PURE VANILLA JS
+                        </span>
+                    </div>
+
+                    <h2 class="hero-title">
+                        지루한 일상을 <span class="highlight-yellow">탐험</span>으로,<br>
+                        복잡한 데이터를 <span class="highlight-indigo">직관적 인터랙션</span>으로
+                    </h2>
+
+                    <p class="hero-description">
+                        다문화 가정을 위한 오프라인 이마트 매장 게이미피케이션 기획부터, 
+                        Leaflet GIS 기반 대용량 상권 편의시설 지도 웹앱까지. 
+                        <strong>문제 정의(AS-IS)</strong>에서 출발하여 <strong>웹 프론트엔드 프로덕트</strong>로 완결 짓는 올라운더 포트폴리오입니다.
+                    </p>
+
+                    <div class="hero-cta-group">
+                        <a href="#projects" class="btn btn-primary">
+                            <i class="fa-solid fa-layer-group"></i>
+                            <span>프로젝트 탐색하기</span>
+                        </a>
+                        <a href="map/index.html" target="_blank" class="btn btn-secondary">
+                            <i class="fa-solid fa-map-location-dot"></i>
+                            <span>부산 지도 라이브 데모</span>
+                        </a>
+                        <a href="e.html" target="_blank" class="btn btn-secondary">
+                            <i class="fa-solid fa-compass"></i>
+                            <span>이마트 인터랙티브 기획서</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Hero Right: Glassmorphism Stats Showcase -->
+                <div class="hero-stats-card glass-panel">
+                    <div class="stats-header">
+                        <span class="stats-header-title">Core Performance Highlights</span>
+                        <span class="badge badge-green">VERIFIED READY</span>
+                    </div>
+
+                    <div class="stats-list">
+                        <div class="stat-item">
+                            <div class="stat-info">
+                                <span class="stat-label">이마트 보물찾기 프로젝트</span>
+                                <span class="stat-desc">체류 시간 증대 목표</span>
+                            </div>
+                            <span class="stat-val">42분 ➔ 68분</span>
+                        </div>
+
+                        <div class="stat-item">
+                            <div class="stat-info">
+                                <span class="stat-label">부산 편의 지도 웹앱</span>
+                                <span class="stat-desc">GIS 좌표 실시간 클러스터링</span>
+                            </div>
+                            <span class="stat-val">25+ 지점</span>
+                        </div>
+
+                        <div class="stat-item">
+                            <div class="stat-info">
+                                <span class="stat-label">기획 &amp; 비주얼 에셋</span>
+                                <span class="stat-desc">카드뉴스·숏폼·포스터·PDF</span>
+                            </div>
+                            <span class="stat-val">8+ 종 완결</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. Section 7.1 Visual Concept Showcase (Modern Tech Minimal & Editorial Elegance) -->
+    <section id="design-system" class="tokens-section">
+        <div class="container">
+            <div class="section-header">
+                <p class="section-subtitle">PRD Section 7.1 Implementation</p>
+                <h3 class="section-title">비주얼 컨셉: Modern Tech Minimal &amp; Editorial Elegance</h3>
+                <p style="max-width: 680px; margin: 0.75rem auto 0; font-size: 0.95rem;">
+                    신뢰감을 주는 딥 네이비(#0A0F1D)와 신세계/이마트 연계 앰버 골드(#FFB81C), 활력 있는 일렉트릭 인디고(#6366F1)를 조화시켜 
+                    <strong>글래스모피즘(Backdrop blur 16px)</strong>과 <strong>16~24px 둥근 모서리</strong>의 세련된 에디토리얼 무드를 완성했습니다.
+                </p>
+            </div>
+
+            <!-- Token Swatches Grid -->
+            <div class="tokens-grid">
+                <!-- Token 1: Deep Navy -->
+                <div class="token-card glass-panel">
+                    <div class="color-chip" style="background-color: #0A0F1D; color: #94A3B8; border: 1px solid rgba(255,255,255,0.15);">
+                        #0A0F1D
+                    </div>
+                    <div class="token-meta">
+                        <h4>Deep Cosmic Navy</h4>
+                        <p>우아하고 깊이 있는 다크 배경. 컨텐츠 가독성을 극대화하는 기본 베이스 표면</p>
+                    </div>
+                </div>
+
+                <!-- Token 2: Emart Yellow / Amber -->
+                <div class="token-card glass-panel">
+                    <div class="color-chip" style="background-color: #FFB81C; color: #112A46;">
+                        #FFB81C
+                    </div>
+                    <div class="token-meta">
+                        <h4>Emart Vibrant Amber</h4>
+                        <p>이마트의 브랜드 헤리티지를 잇는 웜 골드 액센트. 핵심 CTA 및 지표 하이라이트</p>
+                    </div>
+                </div>
+
+                <!-- Token 3: Electric Indigo -->
+                <div class="token-card glass-panel">
+                    <div class="color-chip" style="background-color: #6366F1; color: #FFFFFF;">
+                        #6366F1
+                    </div>
+                    <div class="token-meta">
+                        <h4>Electric Tech Indigo</h4>
+                        <p>테크놀로지와 프론트엔드 전문성을 전달하는 세련된 인디고 포인트</p>
+                    </div>
+                </div>
+
+                <!-- Token 4: Glass Surface -->
+                <div class="token-card glass-panel">
+                    <div class="color-chip" style="background: rgba(30, 41, 59, 0.75); color: #F8FAFC; backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.2);">
+                        rgba(30,41,59,0.72)
+                    </div>
+                    <div class="token-meta">
+                        <h4>Editorial Glass Surface</h4>
+                        <p>Backdrop-blur 16px와 미세 반투명 테두리로 구현한 모던 글래스모피즘</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. Projects Showcase Section (Previewing core assets) -->
+    <section id="projects" class="projects-section">
+        <div class="container">
+            <div class="section-header">
+                <p class="section-subtitle">Featured Works</p>
+                <h3 class="section-title">핵심 프로젝트 쇼케이스</h3>
+            </div>
+
+            <!-- Filter Bar (Vanilla JS Filter Hook) -->
+            <div class="filter-bar">
+                <button class="filter-btn active" data-filter="all">전체보기 (All)</button>
+                <button class="filter-btn" data-filter="planning">서비스 기획 &amp; 마케팅</button>
+                <button class="filter-btn" data-filter="frontend">웹 프론트엔드 &amp; GIS</button>
+            </div>
+
+            <!-- [FR-01] projects-grid: app.js가 PORTFOLIO_DATA를 읽어 동적 렌더링 -->
+            <div class="projects-grid" id="projects-grid"></div>
+        </div>
+    </section>
+
+    <!-- 5. Footer (Contact & Credentials) -->
+    <footer id="contact" class="site-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="brand-logo">
+                    <div class="brand-mark">신</div>
+                    <div class="brand-text">
+                        <h4 style="font-size: 1rem; color: var(--text-primary);">신세계 2기 통합 포트폴리오</h4>
+                        <p style="font-size: 0.78rem; color: var(--text-muted);">
+                            Designed with Modern Tech Minimal &amp; Editorial Elegance (PRD 7.1)
+                        </p>
+                    </div>
+                </div>
+
+                <div class="footer-credit">
+                    <p>© 2026 Personal Portfolio. Built with Pure Vanilla HTML, CSS, and JavaScript. No Database required.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- [FR-01] No-DB 정적 데이터 엔진 & 렌더러 -->
+    <script src="js/portfolio-data.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
